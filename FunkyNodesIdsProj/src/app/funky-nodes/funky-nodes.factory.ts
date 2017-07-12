@@ -1,9 +1,9 @@
-import {FunkyNodesStorage} from './funky-nodes.model';
+import {FunkyNodesStorage} from './funky-nodes.strategy.generic';
 import {FunkyNodesTreeStorage} from './funky-nodes.strategy.range';
 
 export class FunkyNodesFactory {
 
-  static get(): FunkyNodesStorage {
-    return new FunkyNodesTreeStorage();
+  static get(key: string): FunkyNodesStorage {
+    return new FunkyNodesTreeStorage(key);
   }
 }

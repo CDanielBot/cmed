@@ -1,5 +1,5 @@
 import {FunkyNodeId} from './funky-nodes.model';
-import {FunkyNodesStorage} from './funky-nodes.model';
+import {FunkyNodesStorage} from './funky-nodes.strategy.generic';
 
 export class Range {
 
@@ -99,10 +99,10 @@ export class Range {
   }
 
 
-  getCurrentNodeIds(key: string): Array<FunkyNodeId> {
-    const nodeIds = new Array<FunkyNodeId>();
+  getCurrentNodeIds(key: string): Set<FunkyNodeId> {
+    const nodeIds = new Set<FunkyNodeId>();
     for (let i = this.lowerBound; i <= this.upperBound; i++) {
-      nodeIds.push(new FunkyNodeId(key, i));
+      nodeIds.add(new FunkyNodeId(key, i));
     }
     return nodeIds;
   }
@@ -126,7 +126,7 @@ export class Range {
  *        - insert many elements: O(nlogN)
  *        * worst-case - all the elements come as pre-ordered
  */
-export class FunkyNodesTreeStorage implements FunkyNodesStorage {
+export class FunkyNodesTreeStorage extends FunkyNodesStorage {
 
   root: Range;
 
@@ -155,36 +155,33 @@ export class FunkyNodesTreeStorage implements FunkyNodesStorage {
     }
   }
 
-
-  getAllNodeIndexes(): Array<number> {
-    return null;
-  }
-
-  getAllNodeIds(key: string): Array<FunkyNodeId> {
-    const allNodes = new Array<FunkyNodeId>();
-    this.inOrderTreeIteration(key, this.root, allNodes);
+  getAllNodeIds(): Set<FunkyNodeId> {
+    const allNodes = new Set<FunkyNodeId>();
+    this.inOrderTreeIteration(this.root, allNodes);
     return allNodes;
   }
 
 
-  private inOrderTreeIteration(key, currentRange: Range, nodeIds: Array<FunkyNodeId>): Array<FunkyNodeId> {
+  private inOrderTreeIteration(currentRange: Range, nodeIds: Set<FunkyNodeId>): Set<FunkyNodeId> {
     if (!currentRange) {
-      return [];
+      return new Set();
     }
 
     if (currentRange.leftRange) {
-      this.arradAddAll(nodeIds, this.inOrderTreeIteration(key, currentRange.leftRange, nodeIds));
+      this.setAddAll(nodeIds, this.inOrderTreeIteration(currentRange.leftRange, nodeIds));
     }
 
-    this.arradAddAll(nodeIds, currentRange.getCurrentNodeIds(key));
+    this.setAddAll(nodeIds, currentRange.getCurrentNodeIds(this.key));
 
     if (currentRange.rightRange) {
-      this.arradAddAll(nodeIds, this.inOrderTreeIteration(key, currentRange.rightRange, nodeIds));
+      this.setAddAll(nodeIds, this.inOrderTreeIteration(currentRange.rightRange, nodeIds));
     }
   }
 
-  private arradAddAll(nodeIds1: Array<FunkyNodeId>, nodeIds2: Array<FunkyNodeId>): void {
-    nodeIds1.push.apply(nodeIds1, nodeIds2);
+  private setAddAll(nodeIds1: Set<FunkyNodeId>, nodeIds2: Set<FunkyNodeId>): void {
+    nodeIds2.forEach((nodeId) => {
+      nodeIds1.add(nodeId);
+    });
   }
 
   private addElem(elem: number, currentRange: Range): Range {

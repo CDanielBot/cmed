@@ -1,4 +1,5 @@
 import {FunkyNodesFactory} from './funky-nodes.factory'
+import {FunkyNodesStorage} from './funky-nodes.strategy.generic';
 
 export class FunkyNodesSet {
 
@@ -7,7 +8,7 @@ export class FunkyNodesSet {
   private get(key: string): FunkyNodesStorage {
     let funkyNodesStorage = this.nodesMap.get(key);
     if (!funkyNodesStorage) {
-      funkyNodesStorage = FunkyNodesFactory.get();
+      funkyNodesStorage = FunkyNodesFactory.get(key);
     }
     return funkyNodesStorage;
   }
@@ -17,6 +18,9 @@ export class FunkyNodesSet {
   }
 
   add(nodeId: FunkyNodeId): void {
+    if (nodeId.index < 1) {
+      throw new Error('Cannot insert nodes with indexes less than 1');
+    }
     const funkyNodesStorage = this.get(nodeId.key);
     funkyNodesStorage.add(nodeId.index);
     this.set(nodeId.key, funkyNodesStorage);
@@ -30,20 +34,21 @@ export class FunkyNodesSet {
     });
   }
 
-  getEntireSet(): Array<FunkyNodeId> {
-    const set = new Array<FunkyNodeId>();
+  getEntireSet(): Set<FunkyNodeId> {
+    const set = new Set<FunkyNodeId>();
     this.nodesMap.forEach((storage: FunkyNodesStorage, key: string) => {
-      set.push.apply(set, storage.getAllNodeIds(key));
+      storage.getAllNodeIds().forEach((nodeId) => {
+        set.add(nodeId);
+      });
     });
     return set;
   }
 
   toString(): string {
-    var result = '';
-    const set = this.getEntireSet();
-    for(const funkyNodeId of set){
+    let result = '';
+    this.getEntireSet().forEach((funkyNodeId) => {
       result += funkyNodeId.toString() + ' ';
-    }
+    });
     return result;
   }
 
@@ -59,15 +64,10 @@ export class FunkyNodeId {
     this.index = index;
   }
 
-  toString(): string{
+  toString(): string {
     return this.key + '/' + this.index;
   }
 
 }
 
-export interface FunkyNodesStorage {
-  add(elem: number): void;
-  addAll(other: FunkyNodesStorage);
-  getAllNodeIndexes(): Array<number>;
-  getAllNodeIds(key: string): Array<FunkyNodeId>;
-}
+

@@ -1,8 +1,7 @@
-
 import {FunkyNodeId} from './funky-nodes.model';
-import {FunkyNodesStorage} from './funky-nodes.model';
+import {FunkyNodesStorage} from './funky-nodes.strategy.generic';
 
-export class FunkyNodesBoolArrayStorage implements FunkyNodesStorage {
+export class FunkyNodesBoolArrayStorage extends FunkyNodesStorage {
 
   private existance: boolean[] = [];
 
@@ -11,26 +10,16 @@ export class FunkyNodesBoolArrayStorage implements FunkyNodesStorage {
   }
 
   addAll(other: FunkyNodesStorage): void {
-    for (const index of other.getAllNodeIndexes()) {
-      this.add(index);
-    }
-  }
-
-  getAllNodeIndexes(): Array<number> {
-    const indexes = new Array<number>();
-    this.existance.forEach((boolValue, position) => {
-      if (boolValue === true) {
-        indexes.push(position);
-      }
+    other.getAllNodeIds().forEach((nodeId) => {
+      this.add(nodeId.index);
     });
-    return indexes;
   }
 
-  getAllNodeIds(key: string): Array<FunkyNodeId> {
-    const elements = new Array<FunkyNodeId>();
+  getAllNodeIds(): Set<FunkyNodeId> {
+    const elements = new Set<FunkyNodeId>();
     this.existance.forEach((boolValue, position) => {
       if (boolValue === true) {
-        elements.push(new FunkyNodeId(key, position));
+        elements.add(new FunkyNodeId(this.key, position));
       }
     });
     return elements;
