@@ -1,0 +1,22 @@
+<div style="text-align:center">
+  <h1>
+    This is funky nodes implementation! Please don't blink, or you'll miss it!
+  </h1>
+</div>
+<h2>Place your values here </h2>
+
+<div id="input-nodes">
+  <div class="input-margin">
+    Funky nodes1: <input [(ngModel)]="data.rawNodes1"/>
+  </div>
+  <div class="input-margin">
+    Funky nodes2: <input class="input-margin" [(ngModel)]="data.rawNodes2"/>
+  </div>
+  <button id="storeData" type="button" class="btn" (click)="onStoreData()">Store Data</button>
+  <button id="mergeData" type="button" class="btn" (click)="onMergeData()">Merge Data</button>
+</div>
+
+
+<div id="result">
+  Result is: {{data.result}}
+</div>
