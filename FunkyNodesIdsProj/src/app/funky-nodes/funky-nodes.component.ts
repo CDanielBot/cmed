@@ -10,19 +10,41 @@ import {FunkyNodesSet} from './funky-nodes.model';
 export class FunkyNodesComponent {
 
   data = new Data();
-  private funkyNodesSet = new FunkyNodesSet();
 
   onStoreData(): void {
-    console.log('storing data: ' + this.data.rawNodes1);
-    const splitedArray = this.data.rawNodes1.split(' ');
 
-    for (const elem of splitedArray) {
+    if (this.data.rawNodes1) {
+      const funkyNodesSet1 = this.storeData(this.data.rawNodes1);
+      this.data.result1 = funkyNodesSet1.toString();
+    }
+    if (this.data.rawNodes2) {
+      const funkyNodesSet2 = this.storeData(this.data.rawNodes2);
+      this.data.result2 = funkyNodesSet2.toString();
+    }
+  }
+
+  onMergeData(): void {
+
+    const funkyNodesSet1 = this.storeData(this.data.rawNodes1);
+    const funkyNodesSet2 = this.storeData(this.data.rawNodes2);
+
+    funkyNodesSet1.addAll(funkyNodesSet2);
+
+    this.data.mergedResult = funkyNodesSet1.toString();
+  }
+
+  private storeData(data: string): FunkyNodesSet {
+
+    const funkyNodesSet = new FunkyNodesSet();
+
+    for (const elem of data.split(' ')) {
       const nodeId = this.validateElement(elem);
-      this.funkyNodesSet.add(nodeId);
+      funkyNodesSet.add(nodeId);
     }
 
-    this.data.result = this.funkyNodesSet.toString();
+    return funkyNodesSet;
   }
+
 
   private validateElement(elem: string): FunkyNodeId {
     const splitElem = elem.split('/');
@@ -32,7 +54,12 @@ export class FunkyNodesComponent {
 }
 
 export class Data {
+
   rawNodes1: string;
   rawNodes2: string;
-  result: string;
+
+  result1: string;
+  result2: string;
+
+  mergedResult: string;
 }
