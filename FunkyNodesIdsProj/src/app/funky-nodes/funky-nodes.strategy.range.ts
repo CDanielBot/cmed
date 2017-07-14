@@ -168,13 +168,13 @@ export class FunkyNodesTreeStorage extends FunkyNodesStorage {
     }
 
     if (currentRange.leftRange) {
-      this.setAddAll(nodeIds, this.inOrderTreeIteration(currentRange.leftRange, nodeIds));
+      this.inOrderTreeIteration(currentRange.leftRange, nodeIds);
     }
 
     this.setAddAll(nodeIds, currentRange.getCurrentNodeIds(this.key));
 
     if (currentRange.rightRange) {
-      this.setAddAll(nodeIds, this.inOrderTreeIteration(currentRange.rightRange, nodeIds));
+      this.inOrderTreeIteration(currentRange.rightRange, nodeIds);
     }
   }
 
@@ -212,11 +212,18 @@ export class FunkyNodesTreeStorage extends FunkyNodesStorage {
   }
 
   private addRange(rangeToAdd: Range): void {
-    this._addRange(rangeToAdd, this.root);
+    if (!this.root) {
+      this.root = rangeToAdd;
+    } else {
+      this._addRange(rangeToAdd, this.root);
+    }
   }
 
   private _addRange(rangeToAdd: Range, currentRange: Range): void {
-    if (currentRange.contains(rangeToAdd)) {
+    if (!rangeToAdd) {
+      // no need to add empty ranges;
+      return;
+    } else if (currentRange.contains(rangeToAdd)) {
       // range already added
       return;
     } else if (currentRange.overlapsLeft(rangeToAdd)) {

@@ -37,7 +37,7 @@ export class FunkyNodesComponent {
 
     const funkyNodesSet = new FunkyNodesSet();
 
-    for (const elem of data.split(' ')) {
+    for (const elem of data.split(', ')) {
       const nodeId = this.validateElement(elem);
       funkyNodesSet.add(nodeId);
     }
