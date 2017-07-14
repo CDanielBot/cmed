@@ -62,4 +62,17 @@ export class Data {
   result2: string;
 
   mergedResult: string;
+
+  setFirstRange(range1: string): void {
+    this.rawNodes1 = range1;
+  }
+
+  setSecondRange(range2: string): void {
+    this.rawNodes2 = range2;
+  }
+
+  getResultOfMerge(): string {
+    return this.mergedResult;
+  }
+
 }

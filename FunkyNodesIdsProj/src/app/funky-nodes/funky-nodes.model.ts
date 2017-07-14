@@ -49,6 +49,8 @@ export class FunkyNodesSet {
     this.getEntireSet().forEach((funkyNodeId) => {
       result += funkyNodeId.toString() + ' ';
     });
+    result = result.substring(0, result.length - 1); // last characther is space
+
     return result;
   }
 
