@@ -20,7 +20,7 @@ describe('FunkyNodesComponent', () => {
     component = fixture.componentInstance;
   });
 
-  var mergeAndExpectToEqual = function(expected){
+  var mergeAndExpectToEqual = function (expected) {
 
     component.onMergeData();
 
@@ -105,8 +105,17 @@ describe('FunkyNodesComponent', () => {
   it('should not mix ranges for different keys', () => {
     component.data.setFirstRange('t/11, t/12, t/13, v/13, v/14');
     component.data.setSecondRange('a/9, a/10, v/16, w/17');
- 
+
     mergeAndExpectToEqual('t/11 t/12 t/13 v/13 v/14 v/16 a/9 a/10 w/17');
+  });
+
+  it('ignores invalid elements', () => {
+    component.data.setFirstRange('t/11, w/w, 14, daniel, 11/08, 8/daniel');
+    component.data.setSecondRange(', , ana/are/mere, ba_nu_are/3, dar/0, daca/-1');
+
+    mergeAndExpectToEqual('t/11 11/8 ba_nu_are/3');
+    expect(component.data.invalidElementsArray.length).toBe(9);
+    expect(component.data.invalidElements).toEqual('w/w 14 daniel 8/daniel   ana/are/mere dar/0 daca/-1');
   });
 
 });

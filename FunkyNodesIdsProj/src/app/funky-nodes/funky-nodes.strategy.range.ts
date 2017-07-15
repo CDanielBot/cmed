@@ -17,12 +17,12 @@ export class Range {
     this.rightRange = rightRange || null;
   }
 
-  private isAdjacentLeft(other: Range): boolean {
-    return other && this.isLeftNeighbour(other.upperBound);
+  private hasAdjacentRangeInLeft(other: Range): boolean {
+    return other && (this.hasNeighbourInLeft(other.upperBound) || this.lowerBound === other.upperBound);
   }
 
-  private isAdjacentRight(other: Range): boolean {
-    return other && this.isRightNeighbour(other.lowerBound);
+  private hasAdjacentRangeInRight(other: Range): boolean {
+    return other && (this.hasNeighbourInRight(other.lowerBound) || this.upperBound === other.lowerBound);
   }
 
   private joinLeft(): void {
@@ -39,32 +39,32 @@ export class Range {
     return this.lowerBound <= other.lowerBound && other.upperBound <= this.upperBound;
   }
 
-  overlapsLeft(other: Range): boolean {
-    return other.lowerBound < this.lowerBound && (this.lowerBound <= other.upperBound || this.isLeftNeighbour(other.upperBound));
+  hasOverlappingOrAdjacentRangeInLeft(other: Range): boolean {
+    return this.lowerBound > other.lowerBound && (this.lowerBound <= other.upperBound || this.hasNeighbourInLeft(other.upperBound));
   }
 
-  overlapsRight(other: Range): boolean {
-    return other.upperBound > this.upperBound && (this.upperBound >= other.lowerBound || this.isRightNeighbour(other.lowerBound));
+  hasOverlappingOrAdjacentRangeInRight(other: Range): boolean {
+    return other.upperBound > this.upperBound && (this.upperBound >= other.lowerBound || this.hasNeighbourInRight(other.lowerBound));
   }
 
-  isLeftNeighbour(elem): boolean {
+  hasNeighbourInLeft(elem): boolean {
     return elem + 1 === this.lowerBound;
   }
 
-  isRightNeighbour(elem): boolean {
+  hasNeighbourInRight(elem): boolean {
     return elem - 1 === this.upperBound;
   }
 
   decrementLowerBound(): void {
     this.lowerBound--;
-    if (this.isAdjacentLeft(this.leftRange)) {
+    if (this.hasAdjacentRangeInLeft(this.leftRange)) {
       this.joinLeft();
     }
   }
 
   incrementUpperBound(): void {
     this.upperBound++;
-    if (this.isAdjacentRight(this.rightRange)) {
+    if (this.hasAdjacentRangeInRight(this.rightRange)) {
       this.joinRight();
     }
   }
@@ -79,21 +79,74 @@ export class Range {
 
   extendLowerBound(newLowerBound: number): void {
     this.lowerBound = newLowerBound;
-    this.eliminateOverlaps();
+    this.mergeWithFirstOverlappingInUpperBound();
   }
 
   extendUpperBound(newUpperBound: number): void {
     this.upperBound = newUpperBound;
-    this.eliminateOverlaps();
+    this.mergeWithFirstOverlappingInLowerBound();
   }
 
-  private eliminateOverlaps(): void {
-    if (this.leftRange && this.overlapsLeft(this.leftRange)) {
-      this.extendLowerBound(this.leftRange.lowerBound);
+  private mergeWithFirstOverlappingInUpperBound(): void {
+
+    if (!this.leftRange) {
+      // extending bottom range doesn't require merging other ranges
+      return;
+    }
+
+    if (this.hasAdjacentRangeInLeft(this.leftRange)) {
       this.joinLeft();
-    } else if (this.rightRange && this.overlapsRight(this.rightRange)) {
-      this.extendUpperBound((this.rightRange.upperBound));
+    } else {
+      let currentRange = this.leftRange;
+      let parentOfCurrentRange;
+
+      while (currentRange && !this.hasOverlappingOrAdjacentRangeInLeft(currentRange)) {
+        parentOfCurrentRange = currentRange;
+        currentRange = currentRange.rightRange;
+      }
+
+      // make sure parent is set to current if no traversal has happened
+      if (!parentOfCurrentRange) {
+        parentOfCurrentRange = this;
+      }
+
+      if (currentRange) {
+        // swallow current range
+        this.lowerBound = currentRange.lowerBound;
+        parentOfCurrentRange.rightRange = currentRange.leftRange;
+      }
+    }
+
+  }
+
+  private mergeWithFirstOverlappingInLowerBound(): void {
+
+    if (!this.rightRange) {
+      // extending bottom range doesn't require merging other ranges
+      return;
+    }
+
+    if (this.hasAdjacentRangeInRight(this.rightRange)) {
       this.joinRight();
+    } else {
+      let currentRange = this.rightRange;
+      let parentOfCurrentRange;
+
+      while (currentRange && !this.hasOverlappingOrAdjacentRangeInRight(currentRange)) {
+        parentOfCurrentRange = currentRange;
+        currentRange = currentRange.leftRange;
+      }
+
+      // make sure parent is set to current if no traversal has happened
+      if (!parentOfCurrentRange) {
+        parentOfCurrentRange = this;
+      }
+
+      if (currentRange) {
+        // swallow current range
+        this.upperBound = currentRange.upperBound;
+        parentOfCurrentRange.leftRange = currentRange.rightRange;
+      }
     }
   }
 
@@ -192,7 +245,7 @@ export class FunkyNodesTreeStorage extends FunkyNodesStorage {
     }
 
     if (elem < currentRange.lowerBound) {
-      if (currentRange.isLeftNeighbour(elem)) {
+      if (currentRange.hasNeighbourInLeft(elem)) {
         // extend range and possibly join with left neighbour
         currentRange.decrementLowerBound();
       } else {
@@ -200,7 +253,7 @@ export class FunkyNodesTreeStorage extends FunkyNodesStorage {
       }
 
     } else if (elem > currentRange.upperBound) {
-      if (currentRange.isRightNeighbour(elem)) {
+      if (currentRange.hasNeighbourInRight(elem)) {
         // extend range and possibly join with right neighbour
         currentRange.incrementUpperBound();
       } else {
@@ -229,12 +282,13 @@ export class FunkyNodesTreeStorage extends FunkyNodesStorage {
       return;
     }
 
-    if (currentRange.overlapsLeft(rangeToAdd) || currentRange.overlapsRight(rangeToAdd)) {
-      if (currentRange.overlapsLeft(rangeToAdd)) {
+    if (currentRange.hasOverlappingOrAdjacentRangeInLeft(rangeToAdd) || currentRange.hasOverlappingOrAdjacentRangeInRight(rangeToAdd)) {
+      if (currentRange.hasOverlappingOrAdjacentRangeInLeft(rangeToAdd)) {
         currentRange.extendLowerBound(rangeToAdd.lowerBound);
       }
-      if (currentRange.overlapsRight(rangeToAdd)) {
+      if (currentRange.hasOverlappingOrAdjacentRangeInRight(rangeToAdd)) {
         currentRange.extendUpperBound(rangeToAdd.upperBound)
+
       }
     } else if (rangeToAdd.isLessThan(currentRange)) {
       if (currentRange.leftRange) {

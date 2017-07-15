@@ -108,6 +108,14 @@ describe('FunkyNodesTreeStorage', () => {
       return getNodeIds();
     };
 
+    var buildRange = function (lower, upper) {
+      const arr = [];
+      for (var i = lower; i <= upper; i++) {
+        arr.push(i);
+      }
+      return arr;
+    };
+
     beforeEach(() => {
       treeStorage1 = new FunkyNodesTreeStorage('t');
       treeStorage2 = new FunkyNodesTreeStorage('t');
@@ -178,6 +186,7 @@ describe('FunkyNodesTreeStorage', () => {
       addElementsTo1([11, 12, 13, 20, 22, 24]);
       addElementsTo2([16, 15, 21, 23]);
 
+      // 11 12 13 15 16 20 21 22 23 24
       const nodeIds = mergeRanges();
       expect(nodeIds.length).toBe(10);
       expectIndex(nodeIds[0], 11);
@@ -187,7 +196,7 @@ describe('FunkyNodesTreeStorage', () => {
 
     it('should merge complex ranges', () => {
 
-      addElementsTo1([2, 4, 6, 8, 9, 10, 51, 52, 53, 54, 55, 97, 96, 95]);
+      addElementsTo1([2, 4, 6, 51, 52, 8, 9, 10, 53, 54, 55, 97, 96, 95]);
       const arr = [];
       for (let i = 200; i <= 400; i++) {
         arr.push(i);
@@ -216,6 +225,32 @@ describe('FunkyNodesTreeStorage', () => {
       expectIndex(nodeIds[222], 399);
       expectIndex(nodeIds[223], 400);
       expectIndex(nodeIds[224], 401);
+
+    });
+
+    it('should merge complex ranges 2', () => {
+
+      addElementsTo1(buildRange(4, 12));
+      addElementsTo1(buildRange(32, 37));
+      addElementsTo1([41]);
+      addElementsTo1(buildRange(17, 25));
+      addElementsTo1([14, 15]);
+      addElementsTo1(buildRange(27, 29));
+      addElementsTo1([1, 2]);
+
+      addElementsTo2(buildRange(2, 18));
+
+      // [1,25] [27, 29], [32,37] [41, 41]
+      const nodeIds = mergeRanges();
+      expect(nodeIds.length).toBe(35);
+      expectIndex(nodeIds[0], 1);
+      expectIndex(nodeIds[1], 2);
+      expectIndex(nodeIds[24], 25);
+      expectIndex(nodeIds[25], 27);
+      expectIndex(nodeIds[27], 29);
+      expectIndex(nodeIds[28], 32);
+      expectIndex(nodeIds[33], 37);
+      expectIndex(nodeIds[34], 41);
 
     });
 
