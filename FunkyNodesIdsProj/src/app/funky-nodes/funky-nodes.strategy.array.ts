@@ -1,11 +1,11 @@
-
 import {FunkyNodeId} from './funky-nodes.model';
 import {FunkyNodesStorage} from './funky-nodes.strategy.generic';
 
-/* a naive approach where we store each element inside an array
+/** A naive approach where we store each element inside an array
  * we sort the array only when we need to retrieve all the elements in the set
- * Space complexity: O(n*4) or  No of bytes = 4 * number of elements
- * Time complexity: O(1) for add, O(nlogn) for retrieve all*/
+ * Space complexity: O(n) or  No of bytes = 8 * number of elements (each number elements takes 8 bytes in JS)
+ * Time complexity: O(1) for add, O(n) for addAll, O(nlogn) for retrieve all
+ * */
 
 export class FunkyNodesArrayStorage extends FunkyNodesStorage {
 
@@ -20,11 +20,10 @@ export class FunkyNodesArrayStorage extends FunkyNodesStorage {
   }
 
   addAll(other: FunkyNodesStorage): void {
-    const indexes = new Array<Number>();
+    const numbers = this.numbers;
     other.getAllNodeIds().forEach((nodeId) => {
-      indexes.push(nodeId.index);
+      numbers.push(nodeId.index);
     });
-    this.numbers.push.apply(this.numbers, indexes);
   }
 
 
