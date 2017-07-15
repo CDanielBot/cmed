@@ -102,5 +102,11 @@ describe('FunkyNodesComponent', () => {
     mergeAndExpectToEqual('t/1 t/2 t/3 t/4 t/5 t/6 t/11 t/12 t/13 t/20 t/21 t/22 t/23 t/24 t/25');
   });
 
+  it('should not mix ranges for different keys', () => {
+    component.data.setFirstRange('t/11, t/12, t/13, v/13, v/14');
+    component.data.setSecondRange('a/9, a/10, v/16, w/17');
+ 
+    mergeAndExpectToEqual('t/11 t/12 t/13 v/13 v/14 v/16 a/9 a/10 w/17');
+  });
 
 });

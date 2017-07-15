@@ -39,7 +39,11 @@ export class FunkyNodesComponent {
 
     for (const elem of data.split(', ')) {
       const nodeId = this.validateElement(elem);
-      funkyNodesSet.add(nodeId);
+      if (nodeId) {
+        funkyNodesSet.add(nodeId);
+      } else {
+        this.data.addInvalidElement(elem);
+      }
     }
 
     return funkyNodesSet;
@@ -47,8 +51,30 @@ export class FunkyNodesComponent {
 
 
   private validateElement(elem: string): FunkyNodeId {
+
     const splitElem = elem.split('/');
-    return new FunkyNodeId(splitElem[0], Number(splitElem[1]));
+
+    if (this.isCorrectKey(splitElem[0]) && this.isCorrectValue(splitElem[1])) {
+      return new FunkyNodeId(splitElem[0], Number(splitElem[1]));
+    }
+
+    console.error('Invalid element: ' + elem + ' . Going to ignore it');
+    return null;
+
+  }
+
+  private isCorrectKey(key: string): boolean {
+    return key !== undefined && key !== null;
+  }
+
+  private isCorrectValue(value: string): boolean {
+    if (!/^[a-zA-Z0-9]+$/.test(value)) {
+      // Validation failed
+      return false;
+    } else {
+      return parseInt(value) > 0;
+    }
+
   }
 
 }
@@ -60,6 +86,9 @@ export class Data {
 
   result1: string;
   result2: string;
+
+  invalidElementsArray: Array<string>;
+  invalidElements: string;
 
   mergedResult: string;
 
@@ -73,6 +102,20 @@ export class Data {
 
   getResultOfMerge(): string {
     return this.mergedResult;
+  }
+
+  addInvalidElement(elem: string): void {
+    if (!this.invalidElementsArray) {
+      this.invalidElementsArray = new Array<string>();
+    }
+    this.invalidElementsArray.push(elem);
+
+    if(!this.invalidElements){
+      this.invalidElements = elem;
+    }else{
+      this.invalidElements += ' ' + elem;
+    }
+
   }
 
 }
