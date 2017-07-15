@@ -1,0 +1,25 @@
+How to run this project
+
+First, make sure you have installed node.js and npm successfully. Then: 
+
+
+
+Install angular cli and typescript with these commands:
+
+npm install @angular/cli -g
+npm install typescript -g
+
+
+
+Run a small local server with angular project inside (for development purposes only):
+
+ng serve
+
+
+
+Run Unit Tests:
+
+ng test
+
+
+
